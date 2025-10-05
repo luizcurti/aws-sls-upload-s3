@@ -8,6 +8,7 @@
     "test:coverage": "jest --coverage",
     "test:local": "IS_LOCAL=true jest",
     "build": "serverless package",
+    "build:ci": "npx tsc --noEmit && echo '✅ TypeScript compilation successful'",
     "deploy": "serverless deploy",
     "deploy:dev": "serverless deploy --stage dev",
     "deploy:prod": "serverless deploy --stage prod",
