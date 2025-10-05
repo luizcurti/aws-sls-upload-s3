@@ -1,10 +1,12 @@
 
+import * as path from 'path';
+
 import axios from 'axios';
-import * as path from 'path'
+
 import { uploadS3 } from './uploadS3';
 
 export async function getImage(imgURL) {
-        
+
   const bucket = process.env.BUCKET;
 
   if(imgURL === undefined || !imgURL){
@@ -16,13 +18,13 @@ export async function getImage(imgURL) {
   }
 
   try {
-    const responseAxiosImg = await axios.get(imgURL,  { responseType: 'arraybuffer' })
-    var bufferImg = Buffer.from(responseAxiosImg.data, "utf-8")
-    var ImgFileName = path.basename(imgURL);
+    const responseAxiosImg = await axios.get(imgURL,  { responseType: 'arraybuffer' });
+    const bufferImg = Buffer.from(responseAxiosImg.data, 'utf-8');
+    const ImgFileName = path.basename(imgURL);
 
-    uploadS3(bucket, bufferImg, ImgFileName)
+    uploadS3(bucket, bufferImg, ImgFileName);
   }
-  catch(error){
-    throw new Error("Error fetching image");
+  catch{
+    throw new Error('Error fetching image');
   }
-};
+}

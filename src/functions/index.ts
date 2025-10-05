@@ -4,5 +4,5 @@ export const handler = (event) => {
 
   const { imageURL } = JSON.parse(event.body);
 
-  return getImage(imageURL)
-}
+  return getImage(imageURL);
+};

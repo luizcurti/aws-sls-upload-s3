@@ -1,0 +1,63 @@
+services:
+  localstack:
+    container_name: "${LOCALSTACK_DOCKER_NAME:-localstack-main}"
+    image: localstack/localstack:3.0
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
+      - DEBUG=${DEBUG:-0}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - SERVICES=s3,lambda,apigateway,iam,sts,logs
+      - LAMBDA_EXECUTOR=${LAMBDA_EXECUTOR:-local}
+      - LOCALSTACK_HOST=localhost.localstack.cloud:4566
+      - PERSIST_ALL=1
+      # AWS Config
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      # S3 specific config
+      - S3_SKIP_SIGNATURE_VALIDATION=1
+      - S3_SKIP_KMS_KEY_VALIDATION=1
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./tmp/localstack}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - localstack-network
+
+  # Redis for caching (optional)
+  redis:
+    container_name: "localstack-redis"
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    networks:
+      - localstack-network
+    profiles:
+      - with-redis
+
+  # DynamoDB Admin (optional)
+  dynamodb-admin:
+    container_name: "localstack-dynamodb-admin"
+    image: aaronshaf/dynamodb-admin
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    depends_on:
+      - localstack
+    networks:
+      - localstack-network
+    profiles:
+      - with-admin
+
+networks:
+  localstack-network:
+    driver: bridge
+
+volumes:
+  localstack-data:

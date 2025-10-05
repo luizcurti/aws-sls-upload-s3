@@ -1,15 +1,15 @@
 # Dependencies
 node_modules/
 npm-debug.log*
-package-lock.json
 
-# Build
+# Build outputs
 .serverless/
 .esbuild/
 dist/
 build/
+coverage/
 
-# Environment variables
+# Environment files
 .env
 .env.local
 .env.*.local
@@ -18,27 +18,28 @@ build/
 tmp/
 .localstack/
 
-# Coverage
-coverage/
-.qodo/
-.nyc_output
-
 # Logs
 *.log
 logs/
 
-# Jest cache
-.jest/
+# Runtime data
+*.pid
+*.seed
 
-# IDEs
+# IDE files
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+
+# Package lock files (optional, uncomment if needed)
+# package-lock.json
+# yarn.lock
+
+# Jest cache
+.jest/
 
 # Temporary files
 *.tmp

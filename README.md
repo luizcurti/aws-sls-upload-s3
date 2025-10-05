@@ -14,7 +14,7 @@ This is a simple serverless application that allows you to upload files to an AW
 
 ## ☁️ Prerequisites
 
-- Node.js >= 18
+- Node.js >= 20
 - [Serverless Framework](https://www.serverless.com/framework/docs/getting-started)
 - AWS CLI configured (`aws configure`)
 
