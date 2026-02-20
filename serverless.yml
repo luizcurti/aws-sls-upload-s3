@@ -8,22 +8,22 @@ provider:
   memorySize: 128
   timeout: 10
   environment:
-    BUCKET_NAME: your-bucket-name
+    BUCKET_NAME: ${env:S3_BUCKET_NAME, 'your-bucket-name'}
   iam:
     role:
       statements:
         - Effect: "Allow"
           Action:
             - "s3:PutObject"
-          Resource: "arn:aws:s3:::your-bucket-name/*"
+          Resource: "arn:aws:s3:::${env:S3_BUCKET_NAME, 'your-bucket-name'}/*"
 
 functions:
   index:
     handler: src/functions/index.handler
-  uploadS3:
-    handler: src/functions/uploadS3.handler
-  getImage:
-    handler: src/functions/getImage.handler
+    events:
+      - httpApi:
+          method: post
+          path: /upload
 
 build:
   esbuild:

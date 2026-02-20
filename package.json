@@ -32,12 +32,11 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.883.0",
     "@middy/core": "^6.1.6",
     "@middy/http-json-body-parser": "^6.1.6",
-    "@types/aws-sdk": "^2.7.4",
     "@types/axios": "^0.14.4",
     "@types/jest": "^29.5.14",
-    "aws-sdk": "^2.1692.0",
     "axios": "^1.8.4",
     "ts-jest": "^29.3.1"
   },

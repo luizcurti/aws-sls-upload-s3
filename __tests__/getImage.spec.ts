@@ -13,27 +13,41 @@ describe('getImage', () => {
     jest.resetAllMocks();
   });
 
+  test('Should return invalid request body when payload is malformed', async () => {
+    const result = await handler({ body: '{invalid-json' });
+    expect(result.statusCode).toEqual(400);
+    expect(JSON.parse(result.body)).toEqual({ message: 'Invalid request body' });
+  });
+
   test('Should be check if Lambda has URL', async () => {
-    process.env.BUCKET = 'bucketS3';
+    process.env.BUCKET_NAME = 'bucketS3';
+    process.env.BUCKET = '';
     const result = await handler(invalidEvent);
-    expect(result).toEqual('Invalid parameters. URL is missing');
+    expect(result.statusCode).toEqual(400);
+    expect(JSON.parse(result.body)).toEqual({ message: 'Invalid parameters. URL is missing' });
   });
 
   test('Should be check if Lambda has Bucket', async () => {
+    process.env.BUCKET_NAME = '';
     process.env.BUCKET = '';
     const result = await handler(validEvent);
-    expect(result).toEqual('Invalid parameters. Bucket is missing');
+    expect(result.statusCode).toEqual(500);
+    expect(JSON.parse(result.body)).toEqual({ message: 'Invalid parameters. Bucket is missing' });
   });
 
   test('Should be checked if there is an error when fetching image', async () => {
-    process.env.BUCKET = 'bucketS3';
+    process.env.BUCKET_NAME = 'bucketS3';
+    process.env.BUCKET = '';
     jest.spyOn(axios, 'get').mockRejectedValue(new Error('Mocked fetch error'));
 
-    await expect(handler(validEvent)).rejects.toThrow('Error fetching image');
+    const result = await handler(validEvent);
+    expect(result.statusCode).toEqual(500);
+    expect(JSON.parse(result.body)).toEqual({ message: 'Error fetching image' });
   });
 
   test('Should upload image successfully', async () => {
-    process.env.BUCKET = 'bucketS3';
+    process.env.BUCKET_NAME = 'bucketS3';
+    process.env.BUCKET = '';
     const mockImageURL = 'https://example.com/image.jpg';
     const mockBuffer = Buffer.from('mocked image data');
     const mockEvent = { body: JSON.stringify({ imageURL: mockImageURL }) };
@@ -44,12 +58,16 @@ describe('getImage', () => {
       link: 'https://bucketS3.s3.amazonaws.com/image.jpg'
     });
 
-    await handler(mockEvent);
+    const result = await handler(mockEvent);
 
     expect(mockedUploadS3).toHaveBeenCalledWith(
       'bucketS3',
       mockBuffer,
       'image.jpg'
     );
+    expect(result.statusCode).toEqual(200);
+    expect(JSON.parse(result.body)).toEqual({
+      link: 'https://bucketS3.s3.amazonaws.com/image.jpg'
+    });
   });
 });

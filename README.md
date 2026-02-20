@@ -1,62 +1,113 @@
-# 📤 AWS S3 File Upload (Serverless)
+# AWS S3 Image Upload (Serverless)
 
-This is a simple serverless application that allows you to upload files to an AWS S3 bucket using AWS Lambda, API Gateway, and Node.js.
+A Serverless TypeScript application that receives an `imageURL`, downloads the image, and uploads it to an S3 bucket using AWS SDK v3.
 
-## 📁 Project Structure
+## Stack
 
+- AWS Lambda + API Gateway HTTP API
+- S3 (`@aws-sdk/client-s3`)
+- Serverless Framework v4
+- Jest + ESLint + TypeScript
+- LocalStack (local development)
 
-## 🚀 Features
+## Prerequisites
 
-- Upload base64-encoded files to S3
-- Built with AWS SDK and Node.js
-- Deployable with Serverless Framework
-- Minimal setup, ready to use
+- Node.js `>= 20`
+- npm
+- Docker (for LocalStack)
+- AWS CLI (local scripts)
 
-## ☁️ Prerequisites
+## Instalação
 
-- Node.js >= 20
-- [Serverless Framework](https://www.serverless.com/framework/docs/getting-started)
-- AWS CLI configured (`aws configure`)
+```bash
+npm install
+cp .env.example .env.local
+```
 
-## 📦 Installation
-- git clone https://github.com/luizcurti/aws-sls-upload-s3.git
-- cd aws-sls-upload-s3
-- npm install
+## Environment variables
 
-Set your S3 bucket name in serverless.yml:
+Set these in `.env.local`:
 
-environment:
-- BUCKET_NAME: your-bucket-name
-(Optional) Create the bucket manually in S3 if it doesn't exist.
+- `S3_BUCKET_NAME`: target bucket
+- `AWS_REGION` / `AWS_DEFAULT_REGION`: AWS region
+- `IS_LOCAL=true`: for local LocalStack integration
+- `AWS_ENDPOINT_URL=http://localhost:4566`: LocalStack endpoint
 
-🧪 Local Testing
-Install the local development plugin:
-npm install --save-dev serverless-offline
+On deploy, `serverless.yml` injects `BUCKET_NAME` from `S3_BUCKET_NAME`.
 
-Update your serverless.yml:
-plugins:
-  - serverless-esbuild
-  - serverless-offline
+## API
 
-Start the local server:
-npx serverless offline
+Endpoint:
 
-Make a POST request to http://localhost:3000/upload with the following JSON body:
+- `POST /upload`
+
+Request:
+
+```json
 {
-  "filename": "example.txt",
-  "contentType": "text/plain",
-  "base64Data": "ZXhhbXBsZSBmaWxlIGNvbnRlbnQ="
+  "imageURL": "https://example.com/image.jpg"
 }
+```
 
-🚀 Deployment
-npx serverless deploy
+Success response (`200`):
 
-After deployment, the endpoint URL will be printed in your terminal.
-
-📤 Sample Payload
-
+```json
 {
-  "filename": "hello.txt",
-  "contentType": "text/plain",
-  "base64Data": "aGVsbG8gd29ybGQ="
+  "link": "https://<bucket>.s3.amazonaws.com/image.jpg"
 }
+```
+
+Common errors:
+
+- `400`: invalid body or missing `imageURL`
+- `500`: bucket not configured or fetch/upload failure
+
+## Local development
+
+```bash
+npm run localstack:setup
+npm run deploy:local
+```
+
+Useful commands:
+
+- `npm run docker:up`
+- `npm run docker:down`
+- `npm run docker:logs`
+- `npm run localstack:status`
+
+## Qualidade
+
+- `npm run lint`
+- `npm run lint:tsc`
+- `npm test`
+- `npm run test:coverage`
+- `npm run validate`
+
+## CI/CD
+
+Pipeline defined in [.github/workflows/ci.yml](.github/workflows/ci.yml), running on `push` and `pull_request` for `main`.
+
+### Job `test`
+
+1. `npm install`
+2. `npm run lint`
+3. `npm run lint:tsc`
+4. `npm run test:coverage`
+5. Upload de cobertura para Codecov (não bloqueante)
+
+### Job `build`
+
+1. `npm install`
+2. `npm run build:ci`
+
+## Checklist local antes de PR
+
+Run the same CI checks locally to avoid failures:
+
+```bash
+npm run lint
+npm run lint:tsc
+npm run test:coverage
+npm run build:ci
+```

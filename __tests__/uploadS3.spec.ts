@@ -1,3 +1,5 @@
+import { S3Client } from '@aws-sdk/client-s3';
+
 import { uploadS3 } from '../src/functions/uploadS3';
 
 describe('uploadToS3', () => {
@@ -7,11 +9,7 @@ describe('uploadToS3', () => {
     const key = 'testKey';
 
     jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(require('aws-sdk').S3.prototype, 'upload').mockImplementation(() => {
-      return {
-        promise: () => Promise.reject(new Error('Mocked upload error'))
-      };
-    });
+    jest.spyOn(S3Client.prototype as any, 'send').mockImplementation(() => Promise.reject(new Error('Mocked upload error')));
 
     await expect(uploadS3(bucket, body, key)).rejects.toThrow('S3 upload failed');
   });
@@ -21,11 +19,7 @@ describe('uploadToS3', () => {
     const body = 'data';
     const key = 'testKey';
 
-    jest.spyOn(require('aws-sdk').S3.prototype, 'upload').mockImplementation(() => {
-      return {
-        promise: () => Promise.resolve()
-      };
-    });
+    jest.spyOn(S3Client.prototype as any, 'send').mockImplementation(() => Promise.resolve({}));
 
     const result = await uploadS3(bucket, body, key);
     expect(result).toEqual({
